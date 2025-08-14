@@ -1,0 +1,160 @@
+<div class="devis-container">
+	<div class="distance-section">
+		<div class="section-header">
+			<h2>📍 Calcul des distances pour les devis "À calculer"</h2>
+		</div>
+		<div class="distance-content">
+			<div class="section-actions">
+				<button class="btn-distance" (click)="syncDistanceQuotes()" [disabled]="distanceSpinner">
+					<div class="btn-content">
+						<div class="spinner" *ngIf="distanceSpinner"></div>
+						<span class="btn-icon" *ngIf="!distanceSpinner">📏</span>
+						<span>{{ distanceSpinner ? 'Calcul en cours...' : 'Calculer les distances' }}</span>
+					</div>
+				</button>
+			</div>
+			<div class="api-response" *ngIf="syncDistanceResponse">
+				<div class="response-label">Résultat du calcul :</div>
+				<div class="quotes-list">
+					<div class="quote-item" *ngFor="let quote of syncDistanceResponse">
+						<div class="quote-name">
+							<span class="quote-icon">👤</span>
+							{{quote["name"]}}
+						</div>
+						<div class="quote-details" *ngIf="quote['property_distance_km']">
+							<span class="quote-formula">Adresse Départ: {{quote['property_rue_d_part']}},{{quote['property_cp_ville_d_part']}}</span>
+							<span class="quote-formula">Adresse Arrivée: {{quote['property_rue_arriv']}},{{quote['property_cp_ville_arriv']}}</span>
+							<span class="quote-formula">Distance KM: {{quote['property_distance_km']}}</span>
+							<span class="quote-formula">Distance RÉEL: {{quote['property_distance_r_el']}}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	<div class="sync-section">
+		<div class="sync-header">
+			<div class="sync-info">
+				<div class="email-badge">
+					<span class="email-icon">📧</span>
+					<span class="email-text">hadjime.dem&#64;gmail.com</span>
+				</div>
+				<div class="sync-status" *ngIf="syncSpinner">
+					<span class="status-dot"></span>
+					<span>Synchronisation des demandes non traitées en cours</span>
+				</div>
+			</div>
+			<button class="btn-primary" (click)="syncGmailQuotes()" [disabled]="syncSpinner">
+				<div class="btn-content">
+					<div class="spinner" *ngIf="syncSpinner"></div>
+					<span class="btn-icon" *ngIf="!syncSpinner">🔄</span>
+					<span>{{ syncSpinner ? 'Importation...' : 'Importer nouveaux devis' }}</span>
+				</div>
+			</button>
+			<div class="api-response" *ngIf="syncGmailResponse">
+				<div class="response-content">{{syncGmailResponse}}</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="extraction-section">
+		<div class="section-header">
+			<h2>🧩 Création rapide</h2>
+		</div>
+		<form class="extraction-form" (ngSubmit)="createQuote()">
+			<div class="form-group">
+				<label>Client</label>
+				<select class="form-input" [(ngModel)]="newClientId" name="clientId" required>
+					<option [ngValue]="null">Sélectionner un client…</option>
+					<option *ngFor="let c of (clients$ | async)" [ngValue]="c.id">{{c.name}}</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label>Type</label>
+				<select class="form-input" [(ngModel)]="newType" name="type">
+					<option value="PREDEVIS">Pré-devis</option>
+					<option value="DEVIS">Devis</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label>Formule</label>
+				<select class="form-input" [(ngModel)]="newFormula" name="formula">
+					<option value="Eco">Eco</option>
+					<option value="Confort">Confort</option>
+					<option value="Premium">Premium</option>
+				</select>
+			</div>
+			<button type="submit" class="btn-secondary">Créer</button>
+		</form>
+	</div>
+
+	<div class="quotes-section">
+		<div class="section-header">
+			<h2>📝 Devis générable</h2>
+			<div class="count-badge" *ngIf="(quotesToGenerate$ | async)?.length as len" >{{len}}</div>
+		</div>
+		<div class="quotes-content" *ngIf="(quotesToGenerate$ | async) as quotes; else noQuotesToGenerate">
+			<div class="quotes-list">
+				<div class="quote-item" *ngFor="let quote of quotes">
+					<div class="quote-name">
+						<span class="quote-icon">👤</span>
+						{{quote.number}}
+					</div>
+					<div class="quote-details">
+						<span class="quote-formula">Type: {{quote.type}}</span>
+						<span class="quote-formula" *ngIf="quote.formula">Formule: {{quote.formula}}</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<ng-template #noQuotesToGenerate>
+			<div class="empty-message">
+				<span class="empty-icon">📋</span>
+				<p>Aucun devis à générer pour le moment</p>
+			</div>
+		</ng-template>
+	</div>
+
+	<div class="ready-section">
+		<div class="section-header">
+			<h2>📤 Devis prêts à envoyer</h2>
+			<div class="count-badge" *ngIf="(quotesToSend$ | async)?.length as len" >{{len}}</div>
+		</div>
+		<div class="pdf-content" *ngIf="(quotesToSend$ | async) as quotesToSend; else noQuotesToSend">
+			<div class="pdf-list">
+				<div class="pdf-item" *ngFor="let quote of quotesToSend">
+					<div class="pdf-header">
+						<h3 class="client-info">
+							{{quote.number}}
+						</h3>
+					</div>
+					<div class="pdf-container">
+						<pdf-viewer [src]="returnQuotePath(quote,'Devis')" [render-text]="true" [original-size]="false" [zoom]="0.7" class="pdf-viewer" style="height: 60vh; width: 100%;"></pdf-viewer>
+					</div>
+					<div class="pdf-actions">
+						<button class="btn-send" (click)="sendQuote($event,quote,'Devis')">
+							<div class="btn-content">
+								<div class="spinner" *ngIf="sendSpinner"></div>
+								<span>{{ sendSpinner ? 'Envoi...' : 'Envoyer' }}</span>
+							</div>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<ng-template #noQuotesToSend>
+			<div class="empty-message">
+				<span class="empty-icon">📤</span>
+				<p>Aucun devis prêt à envoyer</p>
+			</div>
+		</ng-template>
+	</div>
+
+	<div class="loading-overlay" *ngIf="counter > 2">
+		<div class="loading-content">
+			<div class="big-spinner"></div>
+			<p>Traitement en cours...</p>
+			<small>{{counter}} opération(s) active(s)</small>
+		</div>
+	</div>
+</div>
