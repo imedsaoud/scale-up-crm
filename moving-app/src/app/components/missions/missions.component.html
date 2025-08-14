@@ -1,0 +1,654 @@
+<div class="container">
+	<div class="tabs">
+		<div class="tab-header">
+			<button class="tab-button" [class.active]="activeTab==='chef-equipe'" (click)="selectTab('chef-equipe')">👷‍♂️ Chef d'Équipe</button>
+			<button class="tab-button" [class.active]="activeTab==='coordinateur'" (click)="selectTab('coordinateur')">📋 Coordinateur</button>
+			<button class="tab-button" [class.active]="activeTab==='commercial'" (click)="selectTab('commercial')">💼 Commercial</button>
+			<button class="tab-button" [class.active]="activeTab==='comptable'" (click)="selectTab('comptable')">🧮 Comptable</button>
+		</div>
+
+		<div class="tab-content" [class.active]="activeTab==='chef-equipe'" id="chef-equipe">
+			<div class="role-badge">
+				<span>👷‍♂️</span>
+				<span>Chef d'Équipe - Validation Terrain</span>
+			</div>
+
+			<div class="missions-list">
+				<div class="missions-header">
+					<h2>🚚 Missions à valider terrain</h2>
+					<span class="missions-count">3 missions</span>
+				</div>
+
+				<div class="mission-card" (click)="openForm('chef-equipe-form')">
+					<div class="mission-header">
+						<div>
+							<div class="mission-client">DUPONT Marie</div>
+							<div class="mission-date">15/08/2025 - Paris → Lyon</div>
+						</div>
+						<div class="mission-status status-pending">
+							<span>⏳</span>
+							<span>Terrain à valider</span>
+						</div>
+					</div>
+					<div class="mission-details">
+						<div class="mission-detail"><strong>Volume:</strong> 45 m³</div>
+						<div class="mission-detail"><strong>Camion:</strong> AB-123-CD</div>
+						<div class="mission-detail"><strong>Équipe:</strong> 3 personnes</div>
+						<div class="mission-detail"><strong>Groupage:</strong> Oui - avec MARTIN</div>
+					</div>
+				</div>
+
+				<div class="mission-card" (click)="openForm('chef-equipe-form')">
+					<div class="mission-header">
+						<div>
+							<div class="mission-client">BERNARD Paul</div>
+							<div class="mission-date">14/08/2025 - Marseille → Nice</div>
+						</div>
+						<div class="mission-status status-pending">
+							<span>⏳</span>
+							<span>Terrain à valider</span>
+						</div>
+					</div>
+					<div class="mission-details">
+						<div class="mission-detail"><strong>Volume:</strong> 28 m³</div>
+						<div class="mission-detail"><strong>Camion:</strong> EF-456-GH</div>
+						<div class="mission-detail"><strong>Équipe:</strong> 2 personnes</div>
+						<div class="mission-detail"><strong>Groupage:</strong> Non</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-container" id="chef-equipe-form" [class.active]="activeFormId === 'chef-equipe-form'">
+				<div class="form-header">
+					<button class="back-button" (click)="closeForm('chef-equipe-form')">←</button>
+					<div>
+						<div class="form-title">Validation Terrain - DUPONT Marie</div>
+						<div style="color: #64748b; font-size: 14px;">Mission du 15/08/2025</div>
+					</div>
+				</div>
+
+				<div class="validation-steps">
+					<div class="step current">
+						<span>👷‍♂️</span>
+						<span>Terrain</span>
+					</div>
+					<div class="step pending">
+						<span>📋</span>
+						<span>Coordination</span>
+					</div>
+					<div class="step pending">
+						<span>💼</span>
+						<span>Commercial</span>
+					</div>
+					<div class="step pending">
+						<span>🧮</span>
+						<span>Comptable</span>
+					</div>
+				</div>
+
+				<form (submit)="onSubmit($event)">
+					<div class="form-section">
+						<h3 class="section-title">📦 Exécution de la mission</h3>
+						<div class="form-grid">
+							<div class="form-group">
+								<label class="form-label">Volume confirmé</label>
+								<div style="display: flex; gap: 12px; align-items: center;">
+									<input type="number" class="form-input" value="45" style="width: 100px;">
+									<span>m³</span>
+									<select class="form-select" style="width: 120px;">
+										<option value="OK">✅ OK</option>
+										<option value="NOK">❌ NOK</option>
+									</select>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Matériel utilisé</label>
+								<input type="text" class="form-input" placeholder="Ex: Sangles, diable, film plastique...">
+							</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h3 class="section-title">👥 Équipe</h3>
+						<div class="team-member">
+							<div class="team-member-header">
+								<span class="team-member-name">MARTIN Jean</span>
+								<span class="team-member-role">Chef d'équipe</span>
+							</div>
+							<div class="team-member-details">
+								<div><strong>Heures supp:</strong> <input type="number" style="width: 60px; border: 1px solid #d1d5db; border-radius: 4px; padding: 4px;"> h</div>
+								<div><strong>Retard:</strong> <input type="number" style="width: 60px; border: 1px solid #d1d5db; border-radius: 4px; padding: 4px;"> min</div>
+							</div>
+						</div>
+						<div class="team-member">
+							<div class="team-member-header">
+								<span class="team-member-name">DURAND Pierre</span>
+								<span class="team-member-role">Déménageur</span>
+							</div>
+							<div class="team-member-details">
+								<div><strong>Heures supp:</strong> <input type="number" style="width: 60px; border: 1px solid #d1d5db; border-radius: 4px; padding: 4px;"> h</div>
+								<div><strong>Retard:</strong> <input type="number" style="width: 60px; border: 1px solid #d1d5db; border-radius: 4px; padding: 4px;"> min</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h3 class="section-title">🚛 Logistique</h3>
+						<div class="form-grid">
+							<div class="form-group">
+								<label class="form-label">Péages</label>
+								<div style="display: flex; gap: 8px; align-items: center;">
+									<input type="number" class="form-input" placeholder="0" style="width: 100px;">
+									<span>€</span>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Stationnement</label>
+								<select class="form-select">
+									<option value="OK">✅ OK</option>
+									<option value="Amende">🚫 Amende</option>
+									<option value="Panneaux">🚧 Panneaux posés</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h3 class="section-title">📸 Preuves & Incidents</h3>
+						<div class="form-grid">
+							<div class="form-group">
+								<label class="form-label">Incidents/Dommages</label>
+								<textarea class="form-textarea" placeholder="Décrivez tout incident ou dommage survenu..."></textarea>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Photos/Vidéos</label>
+								<div class="file-upload" (click)="triggerFileInput(fileInput)">
+									<div class="file-upload-icon">📸</div>
+									<div>Cliquez pour ajouter des photos</div>
+									<input #fileInput type="file" multiple accept="image/*,video/*" style="display: none;">
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-actions">
+						<button type="button" class="btn btn-secondary" (click)="closeForm('chef-equipe-form')">Annuler</button>
+						<button type="submit" class="btn btn-primary">Valider Terrain</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<div class="tab-content" [class.active]="activeTab==='coordinateur'" id="coordinateur">
+			<div class="role-badge">
+				<span>📋</span>
+				<span>Coordinateur - Validation Opérationnelle</span>
+			</div>
+
+			<div class="missions-list">
+				<div class="missions-header">
+					<h2>📋 Missions à valider coordination</h2>
+					<span class="missions-count">2 missions</span>
+				</div>
+
+				<div class="mission-card" (click)="openForm('coordinateur-form')">
+					<div class="mission-header">
+						<div>
+							<div class="mission-client">DUPONT Marie</div>
+							<div class="mission-date">15/08/2025 - Terrain validé</div>
+						</div>
+						<div class="mission-status status-partial">
+							<span>📋</span>
+							<span>Coordination à valider</span>
+						</div>
+					</div>
+					<div class="mission-details">
+						<div class="mission-detail"><strong>Volume:</strong> 45 m³ ✅</div>
+						<div class="mission-detail"><strong>Équipe:</strong> 2h sup, 15min retard</div>
+						<div class="mission-detail"><strong>Incidents:</strong> Aucun</div>
+						<div class="mission-detail"><strong>Preuves:</strong> 5 photos</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-container" id="coordinateur-form" [class.active]="activeFormId === 'coordinateur-form'">
+				<div class="form-header">
+					<button class="back-button" (click)="closeForm('coordinateur-form')">←</button>
+					<div>
+						<div class="form-title">Validation Coordination - DUPONT Marie</div>
+						<div style="color: #64748b; font-size: 14px;">Terrain validé le 15/08/2025</div>
+					</div>
+				</div>
+
+				<div class="validation-steps">
+					<div class="step completed">
+						<span>✅</span>
+						<span>Terrain</span>
+					</div>
+					<div class="step current">
+						<span>📋</span>
+						<span>Coordination</span>
+					</div>
+					<div class="step pending">
+						<span>💼</span>
+						<span>Commercial</span>
+					</div>
+					<div class="step pending">
+						<span>🧮</span>
+						<span>Comptable</span>
+					</div>
+				</div>
+
+				<form (submit)="onSubmit($event)">
+					<div class="form-section">
+						<h3 class="section-title">📊 Validation opérationnelle</h3>
+						<div class="form-grid">
+							<div class="form-group">
+								<label class="form-label">Planning respecté</label>
+								<select class="form-select">
+									<option value="OK">✅ Conforme</option>
+									<option value="Retard">⚠️ Retard justifié</option>
+									<option value="Probleme">❌ Problème</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Ressources utilisées</label>
+								<select class="form-select">
+									<option value="OK">✅ Conformes au devis</option>
+									<option value="Depassement">⚠️ Dépassement justifié</option>
+									<option value="Probleme">❌ Dépassement problématique</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h3 class="section-title">💰 Coûts additionnels</h3>
+						<div class="form-grid">
+							<div class="form-group">
+								<label class="form-label">Heures supplémentaires (équipe)</label>
+								<div style="display: flex; gap: 8px; align-items: center;">
+									<input type="number" class="form-input" value="2" style="width: 80px;">
+									<span>h × 25€/h =</span>
+									<strong>50€</strong>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Coûts supplémentaires</label>
+								<textarea class="form-textarea" placeholder="Détaillez les coûts additionnels éventuels..."></textarea>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h3 class="section-title">✅ SAV et qualité</h3>
+						<div class="form-grid">
+							<div class="form-group">
+								<label class="form-label">SAV nécessaire</label>
+								<select class="form-select">
+									<option value="NON">❌ Aucun SAV</option>
+									<option value="MINEUR">⚠️ SAV mineur</option>
+									<option value="MAJEUR">🚨 SAV majeur</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Notes coordination</label>
+								<textarea class="form-textarea" placeholder="Remarques sur l'exécution de la mission..."></textarea>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-actions">
+						<button type="button" class="btn btn-secondary" (click)="closeForm('coordinateur-form')">Annuler</button>
+						<button type="submit" class="btn btn-primary">Valider Coordination</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<div class="tab-content" [class.active]="activeTab==='commercial'" id="commercial">
+			<div class="role-badge">
+				<span>💼</span>
+				<span>Commercial - Validation Client</span>
+			</div>
+
+			<div class="missions-list">
+				<div class="missions-header">
+					<h2>💼 Missions à valider commercial</h2>
+					<span class="missions-count">1 mission</span>
+				</div>
+
+				<div class="mission-card" (click)="openForm('commercial-form')">
+					<div class="mission-header">
+						<div>
+							<div class="mission-client">DUPONT Marie</div>
+							<div class="mission-date">15/08/2025 - Coordination validée</div>
+						</div>
+						<div class="mission-status status-partial">
+							<span>💼</span>
+							<span>Commercial à valider</span>
+						</div>
+					</div>
+					<div class="mission-details">
+						<div class="mission-detail"><strong>Satisfaction:</strong> À évaluer</div>
+						<div class="mission-detail"><strong>Coûts supp:</strong> 50€</div>
+						<div class="mission-detail"><strong>SAV:</strong> Aucun</div>
+						<div class="mission-detail"><strong>Facturation:</strong> En attente</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-container" id="commercial-form" [class.active]="activeFormId === 'commercial-form'">
+				<div class="form-header">
+					<button class="back-button" (click)="closeForm('commercial-form')">←</button>
+					<div>
+						<div class="form-title">Validation Commercial - DUPONT Marie</div>
+						<div style="color: #64748b; font-size: 14px;">Coordination validée le 15/08/2025</div>
+					</div>
+				</div>
+
+				<div class="validation-steps">
+					<div class="step completed">
+						<span>✅</span>
+						<span>Terrain</span>
+					</div>
+					<div class="step completed">
+						<span>✅</span>
+						<span>Coordination</span>
+					</div>
+					<div class="step current">
+						<span>💼</span>
+						<span>Commercial</span>
+					</div>
+					<div class="step pending">
+						<span>🧮</span>
+						<span>Comptable</span>
+					</div>
+				</div>
+
+				<form (submit)="onSubmit($event)">
+					<div class="form-section">
+						<h3 class="section-title">😊 Satisfaction client</h3>
+						<div class="form-grid">
+							<div class="form-group">
+								<label class="form-label">Évaluation globale</label>
+								<select class="form-select">
+									<option value="">Sélectionner...</option>
+									<option value="EXCELLENT">⭐⭐⭐⭐⭐ Excellent</option>
+									<option value="BON">⭐⭐⭐⭐ Très bon</option>
+									<option value="CORRECT">⭐⭐⭐ Correct</option>
+									<option value="MEDIOCRE">⭐⭐ Médiocre</option>
+									<option value="MAUVAIS">⭐ Mauvais</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Réclamations client</label>
+								<select class="form-select">
+									<option value="AUCUNE">✅ Aucune réclamation</option>
+									<option value="MINEURE">⚠️ Réclamation mineure</option>
+									<option value="MAJEURE">🚨 Réclamation majeure</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h3 class="section-title">💳 Encaissement</h3>
+						<div class="form-grid">
+							<div class="form-group">
+								<label class="form-label">Montant encaissé sur place</label>
+								<div style="display: flex; gap: 8px; align-items: center;">
+									<input type="number" class="form-input" placeholder="0" style="width: 120px;">
+									<span>€</span>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Mode de paiement</label>
+								<select class="form-select">
+									<option value="">Aucun encaissement</option>
+									<option value="ESPECES">💵 Espèces</option>
+									<option value="CB">💳 Carte bancaire</option>
+									<option value="CHEQUE">📄 Chèque</option>
+									<option value="VIREMENT">🏦 Virement</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Signature client</label>
+								<select class="form-select">
+									<option value="OUI">✅ Signée</option>
+									<option value="NON">❌ Non signée</option>
+									<option value="ELECTRONIQUE">📱 Signature électronique</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h3 class="section-title">💰 Facturation</h3>
+						<div class="form-grid">
+							<div class="form-group">
+								<label class="form-label">Coûts additionnels validés</label>
+								<div style="display: flex; gap: 8px; align-items: center;">
+									<input type="number" class="form-input" value="50" style="width: 120px;">
+									<span>€</span>
+									<select class="form-select" style="width: 150px;">
+										<option value="FACTURABLE">✅ Facturable</option>
+										<option value="NON_FACTURABLE">❌ Non facturable</option>
+										<option value="NEGOCIE">⚖️ Négocié</option>
+									</select>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Remise commerciale</label>
+								<div style="display: flex; gap: 8px; align-items: center;">
+									<input type="number" class="form-input" placeholder="0" style="width: 80px;">
+									<span>%</span>
+									<span>ou</span>
+									<input type="number" class="form-input" placeholder="0" style="width: 100px;">
+									<span>€</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h3 class="section-title">📝 Notes commerciales</h3>
+						<div class="form-grid">
+							<div class="form-group">
+								<label class="form-label">Commentaires client</label>
+								<textarea class="form-textarea" placeholder="Retours et commentaires du client..."></textarea>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Actions de fidélisation</label>
+								<textarea class="form-textarea" placeholder="Actions prévues pour fidéliser le client..."></textarea>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-actions">
+						<button type="button" class="btn btn-secondary" (click)="closeForm('commercial-form')">Annuler</button>
+						<button type="submit" class="btn btn-primary">Valider Commercial</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<div class="tab-content" [class.active]="activeTab==='comptable'" id="comptable">
+			<div class="role-badge">
+				<span>🧮</span>
+				<span>Comptable - Clôture Financière</span>
+			</div>
+
+			<div class="missions-list">
+				<div class="missions-header">
+					<h2>🧮 Missions à clôturer</h2>
+					<span class="missions-count">1 mission</span>
+				</div>
+
+				<div class="mission-card" (click)="openForm('comptable-form')">
+					<div class="mission-header">
+						<div>
+							<div class="mission-client">DUPONT Marie</div>
+							<div class="mission-date">15/08/2025 - Commercial validé</div>
+						</div>
+						<div class="mission-status status-partial">
+							<span>🧮</span>
+							<span>Clôture comptable</span>
+						</div>
+					</div>
+					<div class="mission-details">
+						<div class="mission-detail"><strong>Montant HT:</strong> 1250€</div>
+						<div class="mission-detail"><strong>Coûts supp:</strong> 50€</div>
+						<div class="mission-detail"><strong>Encaissé:</strong> 200€ (CB)</div>
+						<div class="mission-detail"><strong>Reste à facturer:</strong> 1100€</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-container" id="comptable-form" [class.active]="activeFormId === 'comptable-form'">
+				<div class="form-header">
+					<button class="back-button" (click)="closeForm('comptable-form')">←</button>
+					<div>
+						<div class="form-title">Clôture Comptable - DUPONT Marie</div>
+						<div style="color: #64748b; font-size: 14px;">Commercial validé le 15/08/2025</div>
+					</div>
+				</div>
+
+				<div class="validation-steps">
+					<div class="step completed">
+						<span>✅</span>
+						<span>Terrain</span>
+					</div>
+					<div class="step completed">
+						<span>✅</span>
+						<span>Coordination</span>
+					</div>
+					<div class="step completed">
+						<span>✅</span>
+						<span>Commercial</span>
+					</div>
+					<div class="step current">
+						<span>🧮</span>
+						<span>Comptable</span>
+					</div>
+				</div>
+
+				<form (submit)="onSubmit($event)">
+					<div class="form-section">
+						<h3 class="section-title">💰 Récapitulatif financier</h3>
+						<div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+							<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+								<div>
+									<div style="font-size: 14px; color: #64748b;">Montant devis HT</div>
+									<div style="font-size: 20px; font-weight: 700; color: #1e293b;">1 250,00 €</div>
+								</div>
+								<div>
+									<div style="font-size: 14px; color: #64748b;">Coûts additionnels</div>
+									<div style="font-size: 20px; font-weight: 700; color: #dc2626;">+ 50,00 €</div>
+								</div>
+								<div>
+									<div style="font-size: 14px; color: #64748b;">Remise commerciale</div>
+									<div style="font-size: 20px; font-weight: 700; color: #059669;">- 0,00 €</div>
+								</div>
+								<div>
+									<div style="font-size: 14px; color: #64748b;">Total HT</div>
+									<div style="font-size: 24px; font-weight: 700; color: #1e293b;">1 300,00 €</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h3 class="section-title">📊 Détail des coûts</h3>
+						<div class="form-grid">
+							<div class="form-group">
+								<label class="form-label">Coût matériel</label>
+								<input type="number" class="form-input" value="45" placeholder="Coût matériel utilisé">
+							</div>
+							<div class="form-group">
+								<label class="form-label">Coût carburant/péages</label>
+								<input type="number" class="form-input" value="85" placeholder="Frais de route">
+							</div>
+							<div class="form-group">
+								<label class="form-label">Coût main d'œuvre</label>
+								<input type="number" class="form-input" value="650" placeholder="Salaires + charges">
+							</div>
+							<div class="form-group">
+								<label class="form-label">Autres charges</label>
+								<input type="number" class="form-input" value="25" placeholder="Assurance, divers">
+							</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h3 class="section-title">🧾 Facturation finale</h3>
+						<div class="form-grid">
+							<div class="form-group">
+								<label class="form-label">Numéro de facture</label>
+								<input type="text" class="form-input" value="FAC-2025-0847" readonly style="background: #f8fafc;">
+							</div>
+							<div class="form-group">
+								<label class="form-label">Date de facturation</label>
+								<input type="date" class="form-input" value="2025-08-15">
+							</div>
+							<div class="form-group">
+								<label class="form-label">Date d'échéance</label>
+								<input type="date" class="form-input" value="2025-09-14">
+							</div>
+							<div class="form-group">
+								<label class="form-label">Mode de règlement</label>
+								<select class="form-select">
+									<option value="VIREMENT">🏦 Virement bancaire</option>
+									<option value="CHEQUE">📄 Chèque</option>
+									<option value="ESPECES">💵 Espèces</option>
+									<option value="CB">💳 Carte bancaire</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h3 class="section-title">📈 Analyse rentabilité</h3>
+						<div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
+							<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 16px;">
+								<div>
+									<div style="font-size: 14px; color: #64748b;">Chiffre d'affaires HT</div>
+									<div style="font-size: 18px; font-weight: 700; color: #1e293b;">1 300,00 €</div>
+								</div>
+								<div>
+									<div style="font-size: 14px; color: #64748b;">Coûts totaux</div>
+									<div style="font-size: 18px; font-weight: 700; color: #dc2626;">805,00 €</div>
+								</div>
+								<div>
+									<div style="font-size: 14px; color: #64748b;">Marge brute</div>
+									<div style="font-size: 18px; font-weight: 700; color: #059669;">495,00 €</div>
+								</div>
+								<div>
+									<div style="font-size: 14px; color: #64748b;">Taux de marge</div>
+									<div style="font-size: 18px; font-weight: 700; color: #059669;">38,1 %</div>
+								</div>
+							</div>
+							<div class="progress-bar">
+								<div class="progress-fill" style="width: 38.1%"></div>
+							</div>
+							<div style="text-align: center; font-size: 14px; color: #64748b;">Rentabilité: Bonne (objectif: 35%)</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h3 class="section-title">📋 Notes comptables</h3>
+						<div class="form-group">
+							<label class="form-label">Remarques comptables</label>
+							<textarea class="form-textarea" placeholder="Notes sur la clôture comptable de cette mission..."></textarea>
+						</div>
+					</div>
+
+					<div class="form-actions">
+						<button type="button" class="btn btn-secondary" (click)="closeForm('comptable-form')">Annuler</button>
+						<button type="submit" class="btn btn-success">🔒 Clôturer la Mission</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>

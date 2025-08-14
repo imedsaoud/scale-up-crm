@@ -1,0 +1,92 @@
+<div class="facture-container">
+	<div class="quotes-section">
+		<div class="section-header">
+			<h2>🧾 Factures générables</h2>
+			<div class="count-badge" *ngIf="invoicesToGenerate.length > 0">{{invoicesToGenerate.length}}</div>
+		</div>
+		<div class="quotes-content" *ngIf="invoicesToGenerate.length > 0; else noInvoicesToGenerate">
+			<div class="quotes-list">
+				<div class="quote-item" *ngFor="let quote of invoicesToGenerate">
+					<div class="quote-name">
+						<span class="quote-icon">💼</span>
+						{{quote["nom - prenom"]}}
+					</div>
+					<div class="quote-details" *ngIf="quote['formule']">
+						<span class="quote-formula">Formule: {{quote['formule']}}</span>
+					</div>
+					<div class="quote-details" *ngIf="quote['type_mail']">
+						<span class="quote-type">Type: {{quote['type_mail']}}</span>
+					</div>
+				</div>
+			</div>
+			<div class="section-actions">
+				<button class="btn-generate" (click)="generateQuotes('Facture')" [disabled]="generateSpinner">
+					<div class="btn-content">
+						<div class="spinner" *ngIf="generateSpinner"></div>
+						<span class="btn-icon" *ngIf="!generateSpinner">⚙️</span>
+						<span>{{ generateSpinner ? 'Génération...' : 'Générer les factures' }}</span>
+					</div>
+				</button>
+			</div>
+		</div>
+		<ng-template #noInvoicesToGenerate>
+			<div class="empty-message">
+				<span class="empty-icon">🧾</span>
+				<p>Aucune facture à générer pour le moment</p>
+			</div>
+		</ng-template>
+	</div>
+
+	<div class="ready-section">
+		<div class="section-header">
+			<h2>📨 Factures prêtes à envoyer</h2>
+			<div class="count-badge" *ngIf="invoicesToSend.length > 0">{{invoicesToSend.length}}</div>
+		</div>
+		<div class="pdf-content" *ngIf="invoicesToSend.length > 0; else noInvoicesToSend">
+			<div class="pdf-list">
+				<div class="pdf-item" *ngFor="let quote of invoicesToSend">
+					<div class="pdf-header">
+						<h3 class="client-info">
+							{{quote["nom - prenom"]}}
+							<span class="mail-type" *ngIf="quote['type_mail']">• {{quote["type_mail"]}}</span>
+						</h3>
+						<div class="quote-number" *ngIf="quote['facture n°']">
+							Facture #{{quote['facture n°']}}
+						</div>
+					</div>
+					<div class="pdf-container">
+						<pdf-viewer [src]="returnQuotePath(quote,'Facture')" [render-text]="true" [original-size]="false" [zoom]="0.7" class="pdf-viewer" style="height: 60vh; width: 100%;"></pdf-viewer>
+					</div>
+					<div class="pdf-actions">
+						<button class="btn-send" (click)="sendQuote($event,quote,'Facture')">
+							<div class="btn-content">
+								<div class="spinner" *ngIf="sendSpinner"></div>
+								<span>{{ sendSpinner ? 'Envoi...' : 'Envoyer' }}</span>
+							</div>
+						</button>
+						<button class="btn-review" (click)="sendQuoteToReview($event,quote,'Facture')">
+							<div class="btn-content">
+								<div class="spinner" *ngIf="reviewSpinner"></div>
+								<span>{{ reviewSpinner ? 'Traitement...' : 'Correction' }}</span>
+							</div>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<ng-template #noInvoicesToSend>
+			<div class="empty-message">
+				<span class="empty-icon">📨</span>
+				<p>Aucune facture prête à envoyer</p>
+			</div>
+		</ng-template>
+	</div>
+
+	<div class="loading-overlay" *ngIf="counter > 2">
+		<div class="loading-content">
+			<div class="big-spinner"></div>
+			<p>Traitement en cours...</p>
+			<small>{{counter}} opération(s) active(s)</small>
+		</div>
+	</div>
+</div>
