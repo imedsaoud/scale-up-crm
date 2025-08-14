@@ -1,0 +1,524 @@
+<div class="devis-generator">
+  <!-- Header avec progression -->
+  <div class="header-section">
+    <div class="page-title">
+      <h1>🚚 Générateur de Devis</h1>
+      <p>Créez des devis personnalisés en quelques étapes</p>
+    </div>
+    
+    <!-- Indicateur de progression -->
+    <div class="progress-tracker">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="(currentStep / totalSteps) * 100"></div>
+      </div>
+      
+      <div class="steps-indicator">
+        <div class="step" 
+             *ngFor="let step of [1, 2, 3, 4, 5]"
+             [class.active]="currentStep === step"
+             [class.completed]="isStepCompleted(step)"
+             [class.clickable]="canGoToStep(step)"
+             (click)="canGoToStep(step) && goToStep(step)">
+          <div class="step-circle">
+            <span *ngIf="!isStepCompleted(step)">{{ getStepIcon(step) }}</span>
+            <span *ngIf="isStepCompleted(step)">✅</span>
+          </div>
+          <div class="step-label">{{ getStepTitle(step) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu principal -->
+  <div class="content-section">
+    
+    <!-- ÉTAPE 1: Informations Client -->
+    <div class="step-content" *ngIf="currentStep === 1">
+      <div class="step-header">
+        <h2>👤 Informations Client</h2>
+        <p>Saisissez les coordonnées du client pour commencer le devis</p>
+      </div>
+
+      <form class="client-form">
+        <div class="form-section">
+          <h3>Identification</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Type de client</label>
+              <select class="form-select" [(ngModel)]="formData.client.type" name="clientType">
+                <option value="particulier">Particulier</option>
+                <option value="professionnel">Professionnel</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Civilité</label>
+              <select class="form-select" [(ngModel)]="formData.client.civilite" name="civilite">
+                <option value="M">M.</option>
+                <option value="Mme">Mme</option>
+                <option value="Mlle">Mlle</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Nom *</label>
+              <input type="text" class="form-input" [(ngModel)]="formData.client.nom" name="nom" required>
+            </div>
+            <div class="form-group">
+              <label>Prénom</label>
+              <input type="text" class="form-input" [(ngModel)]="formData.client.prenom" name="prenom">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Contact</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" class="form-input" [(ngModel)]="formData.client.email" name="email" required>
+            </div>
+            <div class="form-group">
+              <label>Téléphone *</label>
+              <input type="tel" class="form-input" [(ngModel)]="formData.client.telephone" name="telephone" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Adresse de facturation</h3>
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label>Rue *</label>
+              <input type="text" class="form-input" [(ngModel)]="formData.client.adresse.rue" name="adresseRue" required>
+            </div>
+            <div class="form-group">
+              <label>Code postal *</label>
+              <input type="text" class="form-input" [(ngModel)]="formData.client.adresse.codePostal" name="adresseCP" required>
+            </div>
+            <div class="form-group">
+              <label>Ville *</label>
+              <input type="text" class="form-input" [(ngModel)]="formData.client.adresse.ville" name="adresseVille" required>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- ÉTAPE 2: Détails du Déménagement -->
+    <div class="step-content" *ngIf="currentStep === 2">
+      <div class="step-header">
+        <h2>🏠 Détails du Déménagement</h2>
+        <p>Définissez les caractéristiques de votre déménagement</p>
+      </div>
+
+      <form class="demenagement-form">
+        <div class="addresses-section">
+          <div class="address-card">
+            <h3>📍 Adresse de départ</h3>
+            <div class="form-grid">
+              <div class="form-group span-2">
+                <label>Rue *</label>
+                <input type="text" class="form-input" [(ngModel)]="formData.demenagement.adresseDepart.rue" name="departRue" required>
+              </div>
+              <div class="form-group">
+                <label>Code postal *</label>
+                <input type="text" class="form-input" [(ngModel)]="formData.demenagement.adresseDepart.codePostal" name="departCP" required>
+              </div>
+              <div class="form-group">
+                <label>Ville *</label>
+                <input type="text" class="form-input" [(ngModel)]="formData.demenagement.adresseDepart.ville" name="departVille" required>
+              </div>
+              <div class="form-group">
+                <label>Étage</label>
+                <input type="number" class="form-input" [(ngModel)]="formData.demenagement.adresseDepart.etage" name="departEtage" min="0">
+              </div>
+              <div class="form-group">
+                <label>Ascenseur</label>
+                <select class="form-select" [(ngModel)]="formData.demenagement.adresseDepart.ascenseur" name="departAscenseur">
+                  <option [ngValue]="true">Oui</option>
+                  <option [ngValue]="false">Non</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Type d'accès</label>
+                <select class="form-select" [(ngModel)]="formData.demenagement.adresseDepart.acces" name="departAcces">
+                  <option *ngFor="let acces of accesTypes" [value]="acces.value">{{ acces.label }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Parking disponible</label>
+                <select class="form-select" [(ngModel)]="formData.demenagement.adresseDepart.parking" name="departParking">
+                  <option [ngValue]="true">Oui</option>
+                  <option [ngValue]="false">Non</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="address-card">
+            <h3>🎯 Adresse d'arrivée</h3>
+            <div class="form-grid">
+              <div class="form-group span-2">
+                <label>Rue *</label>
+                <input type="text" class="form-input" [(ngModel)]="formData.demenagement.adresseArrivee.rue" name="arriveeRue" required>
+              </div>
+              <div class="form-group">
+                <label>Code postal *</label>
+                <input type="text" class="form-input" [(ngModel)]="formData.demenagement.adresseArrivee.codePostal" name="arriveeCP" required>
+              </div>
+              <div class="form-group">
+                <label>Ville *</label>
+                <input type="text" class="form-input" [(ngModel)]="formData.demenagement.adresseArrivee.ville" name="arriveeVille" required>
+              </div>
+              <div class="form-group">
+                <label>Étage</label>
+                <input type="number" class="form-input" [(ngModel)]="formData.demenagement.adresseArrivee.etage" name="arriveeEtage" min="0">
+              </div>
+              <div class="form-group">
+                <label>Ascenseur</label>
+                <select class="form-select" [(ngModel)]="formData.demenagement.adresseArrivee.ascenseur" name="arriveeAscenseur">
+                  <option [ngValue]="true">Oui</option>
+                  <option [ngValue]="false">Non</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Type d'accès</label>
+                <select class="form-select" [(ngModel)]="formData.demenagement.adresseArrivee.acces" name="arriveeAcces">
+                  <option *ngFor="let acces of accesTypes" [value]="acces.value">{{ acces.label }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Parking disponible</label>
+                <select class="form-select" [(ngModel)]="formData.demenagement.adresseArrivee.parking" name="arriveeParking">
+                  <option [ngValue]="true">Oui</option>
+                  <option [ngValue]="false">Non</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Caractéristiques</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Date du déménagement *</label>
+              <input type="date" class="form-input" [(ngModel)]="formData.demenagement.dateDemenagement" name="dateDemenagement" required>
+            </div>
+            <div class="form-group">
+              <label>Type de logement</label>
+              <select class="form-select" [(ngModel)]="formData.demenagement.typeLogement" name="typeLogement" (change)="calculateVolumeEstimate()">
+                <option *ngFor="let type of typesLogement" [value]="type.value">{{ type.label }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Volume estimé (m³) *</label>
+              <input type="number" class="form-input" [(ngModel)]="formData.demenagement.volumeEstime" name="volumeEstime" min="1" required>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- ÉTAPE 3: Services Additionnels -->
+    <div class="step-content" *ngIf="currentStep === 3">
+      <div class="step-header">
+        <h2>📦 Services Additionnels</h2>
+        <p>Sélectionnez les services complémentaires souhaités</p>
+      </div>
+
+      <div class="services-grid" *ngIf="services$ | async as services">
+        <div class="service-card" 
+             *ngFor="let service of services"
+             [class.selected]="isServiceSelected(service.id)"
+             [class.obligatoire]="service.obligatoire"
+             (click)="!service.obligatoire && toggleService(service)">
+          
+          <div class="service-header">
+            <div class="service-info">
+              <h4>{{ service.nom }}</h4>
+              <p>{{ service.description }}</p>
+            </div>
+            <div class="service-badge" [attr.data-category]="service.categorie">
+              {{ service.categorie }}
+            </div>
+          </div>
+
+          <div class="service-pricing">
+            <div class="price">
+              {{ formatCurrency(service.prix) }}
+              <span class="unit">/ {{ service.unite }}</span>
+            </div>
+            
+            <div class="quantity-control" *ngIf="isServiceSelected(service.id) && service.unite !== 'forfait'">
+              <label>Quantité:</label>
+              <input type="number" 
+                     class="quantity-input" 
+                     [value]="formData.services.find(s => s.id === service.id)?.quantite || 1"
+                     (change)="updateServiceQuantity(service.id, +$event.target.value)"
+                     min="1">
+            </div>
+          </div>
+
+          <div class="service-actions">
+            <div class="service-status" *ngIf="service.obligatoire">
+              <span class="obligatoire-badge">Obligatoire</span>
+            </div>
+            <div class="service-status" *ngIf="!service.obligatoire">
+              <span class="selection-badge" [class.selected]="isServiceSelected(service.id)">
+                {{ isServiceSelected(service.id) ? '✅ Inclus' : '➕ Ajouter' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 4: Options et Tarification -->
+    <div class="step-content" *ngIf="currentStep === 4">
+      <div class="step-header">
+        <h2>💰 Options et Tarification</h2>
+        <p>Finalisez votre devis avec les options et remises</p>
+      </div>
+
+      <div class="options-and-pricing">
+        <!-- Options disponibles -->
+        <div class="options-section">
+          <h3>Options supplémentaires</h3>
+          <div class="options-grid" *ngIf="options$ | async as options">
+            <div class="option-card" 
+                 *ngFor="let option of options"
+                 [class.selected]="isOptionSelected(option.id)"
+                 [class.recommande]="option.recommande"
+                 (click)="toggleOption(option)">
+              
+              <div class="option-header">
+                <h4>{{ option.nom }}</h4>
+                <div class="option-badges">
+                  <span class="recommande-badge" *ngIf="option.recommande">⭐ Recommandé</span>
+                </div>
+              </div>
+              
+              <p>{{ option.description }}</p>
+              
+              <div class="option-footer">
+                <div class="option-price">{{ formatCurrency(option.prix) }}</div>
+                <div class="option-toggle">
+                  <span [class.selected]="isOptionSelected(option.id)">
+                    {{ isOptionSelected(option.id) ? '✅ Inclus' : '➕ Ajouter' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Récapitulatif de tarification -->
+        <div class="pricing-summary" *ngIf="currentPreDevis">
+          <h3>Récapitulatif du devis</h3>
+          <div class="pricing-details">
+            <div class="pricing-line">
+              <span>Base HT</span>
+              <span>{{ formatCurrency(currentPreDevis.tarification.baseHT) }}</span>
+            </div>
+            <div class="pricing-line">
+              <span>Options</span>
+              <span>{{ formatCurrency(currentPreDevis.tarification.options) }}</span>
+            </div>
+            <div class="pricing-line subtotal">
+              <span>Sous-total</span>
+              <span>{{ formatCurrency(currentPreDevis.tarification.sousTotal) }}</span>
+            </div>
+            
+            <!-- Remise commerciale -->
+            <div class="remise-section">
+              <h4>Remise commerciale</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Pourcentage</label>
+                  <input type="number" 
+                         class="form-input" 
+                         [(ngModel)]="formData.remise.pourcentage" 
+                         name="remisePourcentage"
+                         min="0" 
+                         max="50"
+                         (change)="recalculatePreview()">
+                </div>
+                <div class="form-group">
+                  <label>Motif</label>
+                  <input type="text" 
+                         class="form-input" 
+                         [(ngModel)]="formData.remise.motif" 
+                         name="remiseMotif"
+                         placeholder="Ex: Client fidèle">
+                </div>
+              </div>
+            </div>
+
+            <div class="pricing-line discount" *ngIf="currentPreDevis.tarification.remise.montant > 0">
+              <span>Remise (-{{ currentPreDevis.tarification.remise.pourcentage }}%)</span>
+              <span>-{{ formatCurrency(currentPreDevis.tarification.remise.montant) }}</span>
+            </div>
+            <div class="pricing-line">
+              <span>Total HT</span>
+              <span>{{ formatCurrency(currentPreDevis.tarification.totalHT) }}</span>
+            </div>
+            <div class="pricing-line">
+              <span>TVA (20%)</span>
+              <span>{{ formatCurrency(currentPreDevis.tarification.tva) }}</span>
+            </div>
+            <div class="pricing-line total">
+              <span>Total TTC</span>
+              <span>{{ formatCurrency(currentPreDevis.tarification.totalTTC) }}</span>
+            </div>
+            <div class="pricing-line acompte">
+              <span>Acompte (30%)</span>
+              <span>{{ formatCurrency(currentPreDevis.tarification.acompte) }}</span>
+            </div>
+            <div class="pricing-line reste">
+              <span>Reste à payer</span>
+              <span>{{ formatCurrency(currentPreDevis.tarification.resteAPayer) }}</span>
+            </div>
+          </div>
+
+          <!-- Commentaires -->
+          <div class="commentaires-section">
+            <label>Commentaires et conditions particulières</label>
+            <textarea class="form-textarea" 
+                      [(ngModel)]="formData.commentaires" 
+                      name="commentaires"
+                      placeholder="Ajoutez des informations complémentaires..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 5: Génération du Devis -->
+    <div class="step-content" *ngIf="currentStep === 5">
+      <div class="step-header">
+        <h2>📄 Génération du Devis</h2>
+        <p>Votre devis est prêt à être généré et envoyé</p>
+      </div>
+
+      <div class="generation-content">
+        <div class="preview-section" *ngIf="currentPreDevis">
+          <div class="devis-preview">
+            <h3>Aperçu du devis</h3>
+            <div class="preview-details">
+              <div class="client-info">
+                <h4>👤 Client</h4>
+                <p>{{ currentPreDevis.client.civilite }} {{ currentPreDevis.client.nom }} {{ currentPreDevis.client.prenom }}</p>
+                <p>{{ currentPreDevis.client.email }}</p>
+                <p>{{ currentPreDevis.client.telephone }}</p>
+              </div>
+              
+              <div class="demenagement-info">
+                <h4>🏠 Déménagement</h4>
+                <p><strong>Date:</strong> {{ formatDate(currentPreDevis.dateDemenagement!) }}</p>
+                <p><strong>Volume:</strong> {{ currentPreDevis.volumeEstime }} m³</p>
+                <p><strong>Type:</strong> {{ currentPreDevis.typeLogement }}</p>
+                <p><strong>De:</strong> {{ currentPreDevis.adresseDepart.ville }}</p>
+                <p><strong>Vers:</strong> {{ currentPreDevis.adresseArrivee.ville }}</p>
+              </div>
+
+              <div class="services-info" *ngIf="currentPreDevis.services.length > 0">
+                <h4>📦 Services inclus</h4>
+                <ul>
+                  <li *ngFor="let service of currentPreDevis.services">
+                    {{ service.nom }} 
+                    <span *ngIf="service.quantite > 1">(x{{ service.quantite }})</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="options-info" *ngIf="currentPreDevis.options.length > 0">
+                <h4>💰 Options</h4>
+                <ul>
+                  <li *ngFor="let option of currentPreDevis.options">{{ option.nom }}</li>
+                </ul>
+              </div>
+
+              <div class="total-info">
+                <h4>💵 Total</h4>
+                <p class="total-amount">{{ formatCurrency(currentPreDevis.tarification.totalTTC) }}</p>
+                <p class="acompte-amount">Acompte: {{ formatCurrency(currentPreDevis.tarification.acompte) }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions de génération -->
+        <div class="generation-actions">
+          <div class="action-buttons">
+            <button class="btn btn-generate" 
+                    (click)="generateDevis()" 
+                    [disabled]="generatingPDF">
+              <div class="btn-content">
+                <div class="spinner" *ngIf="generatingPDF"></div>
+                <span class="btn-icon" *ngIf="!generatingPDF">📄</span>
+                <span>{{ generatingPDF ? 'Génération en cours...' : 'Générer le devis PDF' }}</span>
+              </div>
+            </button>
+
+            <button class="btn btn-preview" 
+                    (click)="startNewQuote()">
+              <span class="btn-icon">🔄</span>
+              <span>Nouveau devis</span>
+            </button>
+          </div>
+
+          <div class="generation-info">
+            <div class="info-box">
+              <h4>📋 Informations</h4>
+              <ul>
+                <li>Le devis sera généré au format PDF</li>
+                <li>Validité: 60 jours</li>
+                <li>Un email peut être envoyé automatiquement</li>
+                <li>Le devis sera sauvegardé dans l'historique</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Footer -->
+  <div class="navigation-footer">
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" 
+              (click)="previousStep()" 
+              [disabled]="currentStep === 1">
+        <span class="btn-icon">←</span>
+        <span>Précédent</span>
+      </button>
+
+      <div class="step-counter">
+        Étape {{ currentStep }} sur {{ totalSteps }}
+      </div>
+
+      <button class="btn btn-primary" 
+              *ngIf="currentStep < 3"
+              (click)="nextStep()" 
+              [disabled]="(currentStep === 1 && !isStep1Valid()) || (currentStep === 2 && !isStep2Valid())">
+        <span>Suivant</span>
+        <span class="btn-icon">→</span>
+      </button>
+
+      <button class="btn btn-primary" 
+              *ngIf="currentStep === 3"
+              (click)="createPreDevis()" 
+              [disabled]="loading">
+        <div class="spinner" *ngIf="loading"></div>
+        <span>{{ loading ? 'Création...' : 'Calculer le devis' }}</span>
+        <span class="btn-icon" *ngIf="!loading">→</span>
+      </button>
+
+      <button class="btn btn-primary" 
+              *ngIf="currentStep === 4"
+              (click)="nextStep()">
+        <span>Finaliser</span>
+        <span class="btn-icon">→</span>
+      </button>
+    </div>
+  </div>
+</div>

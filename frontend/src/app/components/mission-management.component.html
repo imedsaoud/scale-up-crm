@@ -1,0 +1,696 @@
+<div class="container">
+  <div class="tabs">
+    <!-- Tab Headers -->
+    <div class="tab-header">
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'chef-equipe'"
+        (click)="onTabChange('chef-equipe')">
+        👷‍♂️ Chef d'Équipe
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'coordinateur'"
+        (click)="onTabChange('coordinateur')">
+        📋 Coordinateur
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'commercial'"
+        (click)="onTabChange('commercial')">
+        💼 Commercial
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'comptable'"
+        (click)="onTabChange('comptable')">
+        🧮 Comptable
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content active">
+      <div class="role-badge">
+        <span>{{ getRoleBadgeText(activeTab) }}</span>
+      </div>
+
+      <!-- Mission List -->
+      <div class="missions-list" *ngIf="!showForm">
+        <div class="missions-header">
+          <h2>{{ getTabTitle(activeTab) }}</h2>
+          <span class="missions-count" *ngIf="missions$ | async as missions">
+            {{ missions.length }} mission{{ missions.length > 1 ? 's' : '' }}
+          </span>
+        </div>
+
+        <div class="mission-card" 
+             *ngFor="let mission of missions$ | async"
+             (click)="openForm(mission)">
+          <div class="mission-header">
+            <div>
+              <div class="mission-client">{{ mission.client }}</div>
+              <div class="mission-date">
+                {{ mission.date }} - {{ mission.origin }} → {{ mission.destination }}
+              </div>
+            </div>
+            <div class="mission-status status-pending">
+              <span>{{ getMissionStatusIcon(mission.status) }}</span>
+              <span>{{ getMissionStatusText(mission.status) }}</span>
+            </div>
+          </div>
+          <div class="mission-details">
+            <div class="mission-detail">
+              <strong>Volume:</strong> {{ mission.volume }} m³
+            </div>
+            <div class="mission-detail">
+              <strong>Camion:</strong> {{ mission.truck }}
+            </div>
+            <div class="mission-detail">
+              <strong>Équipe:</strong> {{ mission.team.length }} personne{{ mission.team.length > 1 ? 's' : '' }}
+            </div>
+            <div class="mission-detail">
+              <strong>Groupage:</strong> {{ mission.groupage ? 'Oui' + (mission.groupageClient ? ' - avec ' + mission.groupageClient : '') : 'Non' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forms Container -->
+      <div class="form-container" [class.active]="showForm" *ngIf="selectedMission">
+        <div class="form-header">
+          <button class="back-button" (click)="closeForm()">←</button>
+          <div>
+            <div class="form-title">
+              {{ getRoleBadgeText(activeTab).split(' - ')[1] }} - {{ selectedMission.client }}
+            </div>
+            <div style="color: #64748b; font-size: 14px;">
+              Mission du {{ selectedMission.date }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Validation Steps -->
+        <div class="validation-steps">
+          <div class="step" 
+               [class.completed]="selectedMission.validation.terrain.status === 'completed'"
+               [class.current]="activeTab === 'chef-equipe' && selectedMission.validation.terrain.status !== 'completed'">
+            <span>{{ selectedMission.validation.terrain.status === 'completed' ? '✅' : '👷‍♂️' }}</span>
+            <span>Terrain</span>
+          </div>
+          <div class="step" 
+               [class.completed]="selectedMission.validation.coordination.status === 'completed'"
+               [class.current]="activeTab === 'coordinateur' && selectedMission.validation.coordination.status !== 'completed'"
+               [class.pending]="selectedMission.validation.coordination.status === 'pending'">
+            <span>{{ selectedMission.validation.coordination.status === 'completed' ? '✅' : '📋' }}</span>
+            <span>Coordination</span>
+          </div>
+          <div class="step" 
+               [class.completed]="selectedMission.validation.commercial.status === 'completed'"
+               [class.current]="activeTab === 'commercial' && selectedMission.validation.commercial.status !== 'completed'"
+               [class.pending]="selectedMission.validation.commercial.status === 'pending'">
+            <span>{{ selectedMission.validation.commercial.status === 'completed' ? '✅' : '💼' }}</span>
+            <span>Commercial</span>
+          </div>
+          <div class="step" 
+               [class.completed]="selectedMission.validation.comptable.status === 'completed'"
+               [class.current]="activeTab === 'comptable' && selectedMission.validation.comptable.status !== 'completed'"
+               [class.pending]="selectedMission.validation.comptable.status === 'pending'">
+            <span>{{ selectedMission.validation.comptable.status === 'completed' ? '✅' : '🧮' }}</span>
+            <span>Comptable</span>
+          </div>
+        </div>
+
+        <!-- Chef d'Équipe Form -->
+        <form *ngIf="activeTab === 'chef-equipe'" (ngSubmit)="onSubmitForm()">
+          <div class="form-section">
+            <h3 class="section-title">📦 Exécution de la mission</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Volume confirmé</label>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <input 
+                    type="number" 
+                    class="form-input" 
+                    [(ngModel)]="missionFormData.execution.confirmedVolume"
+                    name="confirmedVolume"
+                    style="width: 100px;">
+                  <span>m³</span>
+                  <select 
+                    class="form-select" 
+                    [(ngModel)]="missionFormData.execution.volumeStatus"
+                    name="volumeStatus"
+                    style="width: 120px;">
+                    <option value="OK">✅ OK</option>
+                    <option value="NOK">❌ NOK</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Matériel utilisé</label>
+                <input 
+                  type="text" 
+                  class="form-input" 
+                  [(ngModel)]="missionFormData.execution.materials"
+                  name="materials"
+                  placeholder="Ex: Sangles, diable, film plastique...">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">👥 Équipe</h3>
+            <div class="team-member" *ngFor="let member of missionFormData.team; let i = index">
+              <div class="team-member-header">
+                <span class="team-member-name">{{ member.name }}</span>
+                <span class="team-member-role">{{ member.role }}</span>
+              </div>
+              <div class="team-member-details">
+                <div>
+                  <strong>Heures supp:</strong> 
+                  <input 
+                    type="number" 
+                    [(ngModel)]="member.overtimeHours"
+                    [name]="'overtimeHours_' + i"
+                    (ngModelChange)="updateTeamMember(i, 'overtimeHours', $event)"
+                    style="width: 60px; border: 1px solid #d1d5db; border-radius: 4px; padding: 4px;"> h
+                </div>
+                <div>
+                  <strong>Retard:</strong> 
+                  <input 
+                    type="number" 
+                    [(ngModel)]="member.delayMinutes"
+                    [name]="'delayMinutes_' + i"
+                    (ngModelChange)="updateTeamMember(i, 'delayMinutes', $event)"
+                    style="width: 60px; border: 1px solid #d1d5db; border-radius: 4px; padding: 4px;"> min
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">🚛 Logistique</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Péages</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input 
+                    type="number" 
+                    class="form-input" 
+                    [(ngModel)]="missionFormData.logistics.tolls"
+                    name="tolls"
+                    placeholder="0" 
+                    style="width: 100px;">
+                  <span>€</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Stationnement</label>
+                <select 
+                  class="form-select"
+                  [(ngModel)]="missionFormData.logistics.parking"
+                  name="parking">
+                  <option value="OK">✅ OK</option>
+                  <option value="Amende">🚫 Amende</option>
+                  <option value="Panneaux">🚧 Panneaux posés</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">📸 Preuves & Incidents</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Incidents/Dommages</label>
+                <textarea 
+                  class="form-textarea" 
+                  [(ngModel)]="missionFormData.incidents.description"
+                  name="incidentsDescription"
+                  placeholder="Décrivez tout incident ou dommage survenu..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Photos/Vidéos</label>
+                <div class="file-upload" (click)="$event.target.querySelector('input').click()">
+                  <div class="file-upload-icon">📸</div>
+                  <div>Cliquez pour ajouter des photos</div>
+                  <input 
+                    type="file" 
+                    multiple 
+                    accept="image/*,video/*" 
+                    style="display: none;"
+                    (change)="onFileUpload($event)">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading">
+              {{ loading ? '⏳ Validation...' : 'Valider Terrain' }}
+            </button>
+          </div>
+        </form>
+
+        <!-- Coordinateur Form -->
+        <form *ngIf="activeTab === 'coordinateur'" (ngSubmit)="onSubmitForm()">
+          <div class="form-section">
+            <h3 class="section-title">📊 Validation opérationnelle</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Planning respecté</label>
+                <select 
+                  class="form-select"
+                  [(ngModel)]="coordinationFormData.planning"
+                  name="planning">
+                  <option value="OK">✅ Conforme</option>
+                  <option value="Retard">⚠️ Retard justifié</option>
+                  <option value="Probleme">❌ Problème</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ressources utilisées</label>
+                <select 
+                  class="form-select"
+                  [(ngModel)]="coordinationFormData.resources"
+                  name="resources">
+                  <option value="OK">✅ Conformes au devis</option>
+                  <option value="Depassement">⚠️ Dépassement justifié</option>
+                  <option value="Probleme">❌ Dépassement problématique</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">💰 Coûts additionnels</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Heures supplémentaires (équipe)</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input 
+                    type="number" 
+                    class="form-input" 
+                    [(ngModel)]="coordinationFormData.overtime.hours"
+                    name="overtimeHours"
+                    style="width: 80px;">
+                  <span>h × 25€/h =</span>
+                  <strong>{{ calculateOvertimeCost() }}€</strong>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Coûts supplémentaires</label>
+                <textarea 
+                  class="form-textarea" 
+                  [(ngModel)]="coordinationFormData.additionalCosts"
+                  name="additionalCosts"
+                  placeholder="Détaillez les coûts additionnels éventuels..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">✅ SAV et qualité</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">SAV nécessaire</label>
+                <select 
+                  class="form-select"
+                  [(ngModel)]="coordinationFormData.sav"
+                  name="sav">
+                  <option value="NON">❌ Aucun SAV</option>
+                  <option value="MINEUR">⚠️ SAV mineur</option>
+                  <option value="MAJEUR">🚨 SAV majeur</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Notes coordination</label>
+                <textarea 
+                  class="form-textarea" 
+                  [(ngModel)]="coordinationFormData.notes"
+                  name="coordinationNotes"
+                  placeholder="Remarques sur l'exécution de la mission..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading">
+              {{ loading ? '⏳ Validation...' : 'Valider Coordination' }}
+            </button>
+          </div>
+        </form>
+
+        <!-- Commercial Form -->
+        <form *ngIf="activeTab === 'commercial'" (ngSubmit)="onSubmitForm()">
+          <div class="form-section">
+            <h3 class="section-title">😊 Satisfaction client</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Évaluation globale</label>
+                <select 
+                  class="form-select"
+                  [(ngModel)]="commercialFormData.satisfaction.rating"
+                  name="satisfactionRating">
+                  <option value="">Sélectionner...</option>
+                  <option value="EXCELLENT">⭐⭐⭐⭐⭐ Excellent</option>
+                  <option value="BON">⭐⭐⭐⭐ Très bon</option>
+                  <option value="CORRECT">⭐⭐⭐ Correct</option>
+                  <option value="MEDIOCRE">⭐⭐ Médiocre</option>
+                  <option value="MAUVAIS">⭐ Mauvais</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Réclamations client</label>
+                <select 
+                  class="form-select"
+                  [(ngModel)]="commercialFormData.satisfaction.complaints"
+                  name="satisfactionComplaints">
+                  <option value="AUCUNE">✅ Aucune réclamation</option>
+                  <option value="MINEURE">⚠️ Réclamation mineure</option>
+                  <option value="MAJEURE">🚨 Réclamation majeure</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">💳 Encaissement</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Montant encaissé sur place</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input 
+                    type="number" 
+                    class="form-input" 
+                    [(ngModel)]="commercialFormData.payment.amountReceived"
+                    name="paymentAmount"
+                    placeholder="0" 
+                    style="width: 120px;">
+                  <span>€</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mode de paiement</label>
+                <select 
+                  class="form-select"
+                  [(ngModel)]="commercialFormData.payment.method"
+                  name="paymentMethod">
+                  <option value="">Aucun encaissement</option>
+                  <option value="ESPECES">💵 Espèces</option>
+                  <option value="CB">💳 Carte bancaire</option>
+                  <option value="CHEQUE">📄 Chèque</option>
+                  <option value="VIREMENT">🏦 Virement</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Signature client</label>
+                <select 
+                  class="form-select"
+                  [(ngModel)]="commercialFormData.payment.signature"
+                  name="paymentSignature">
+                  <option value="OUI">✅ Signée</option>
+                  <option value="NON">❌ Non signée</option>
+                  <option value="ELECTRONIQUE">📱 Signature électronique</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">💰 Facturation</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Coûts additionnels validés</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input 
+                    type="number" 
+                    class="form-input" 
+                    [(ngModel)]="commercialFormData.billing.additionalCosts"
+                    name="billingAdditionalCosts"
+                    style="width: 120px;">
+                  <span>€</span>
+                  <select 
+                    class="form-select" 
+                    [(ngModel)]="commercialFormData.billing.additionalCostsStatus"
+                    name="billingAdditionalCostsStatus"
+                    style="width: 150px;">
+                    <option value="FACTURABLE">✅ Facturable</option>
+                    <option value="NON_FACTURABLE">❌ Non facturable</option>
+                    <option value="NEGOCIE">⚖️ Négocié</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Remise commerciale</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input 
+                    type="number" 
+                    class="form-input" 
+                    [(ngModel)]="commercialFormData.billing.discountPercent"
+                    name="billingDiscountPercent"
+                    placeholder="0" 
+                    style="width: 80px;">
+                  <span>%</span>
+                  <span>ou</span>
+                  <input 
+                    type="number" 
+                    class="form-input" 
+                    [(ngModel)]="commercialFormData.billing.discountAmount"
+                    name="billingDiscountAmount"
+                    placeholder="0" 
+                    style="width: 100px;">
+                  <span>€</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">📝 Notes commerciales</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Commentaires client</label>
+                <textarea 
+                  class="form-textarea" 
+                  [(ngModel)]="commercialFormData.comments.customerFeedback"
+                  name="commentsCustomerFeedback"
+                  placeholder="Retours et commentaires du client..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Actions de fidélisation</label>
+                <textarea 
+                  class="form-textarea" 
+                  [(ngModel)]="commercialFormData.comments.loyaltyActions"
+                  name="commentsLoyaltyActions"
+                  placeholder="Actions prévues pour fidéliser le client..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading">
+              {{ loading ? '⏳ Validation...' : 'Valider Commercial' }}
+            </button>
+          </div>
+        </form>
+
+        <!-- Comptable Form -->
+        <form *ngIf="activeTab === 'comptable'" (ngSubmit)="onSubmitForm()">
+          <div class="form-section">
+            <h3 class="section-title">💰 Récapitulatif financier</h3>
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div>
+                  <div style="font-size: 14px; color: #64748b;">Montant devis HT</div>
+                  <div style="font-size: 20px; font-weight: 700; color: #1e293b;">
+                    {{ selectedMission.billing?.baseAmount | number:'1.2-2' }} €
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size: 14px; color: #64748b;">Coûts additionnels</div>
+                  <div style="font-size: 20px; font-weight: 700; color: #dc2626;">
+                    + {{ selectedMission.billing?.additionalCosts | number:'1.2-2' }} €
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size: 14px; color: #64748b;">Remise commerciale</div>
+                  <div style="font-size: 20px; font-weight: 700; color: #059669;">
+                    - {{ selectedMission.billing?.discount | number:'1.2-2' }} €
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size: 14px; color: #64748b;">Total HT</div>
+                  <div style="font-size: 24px; font-weight: 700; color: #1e293b;">
+                    {{ selectedMission.billing?.totalHT | number:'1.2-2' }} €
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">📊 Détail des coûts</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Coût matériel</label>
+                <input 
+                  type="number" 
+                  class="form-input" 
+                  [(ngModel)]="comptableFormData.costs.material"
+                  name="costsMaterial"
+                  (ngModelChange)="calculateProfitability()"
+                  placeholder="Coût matériel utilisé">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Coût carburant/péages</label>
+                <input 
+                  type="number" 
+                  class="form-input" 
+                  [(ngModel)]="comptableFormData.costs.fuelTolls"
+                  name="costsFuelTolls"
+                  (ngModelChange)="calculateProfitability()"
+                  placeholder="Frais de route">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Coût main d'œuvre</label>
+                <input 
+                  type="number" 
+                  class="form-input" 
+                  [(ngModel)]="comptableFormData.costs.labor"
+                  name="costsLabor"
+                  (ngModelChange)="calculateProfitability()"
+                  placeholder="Salaires + charges">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Autres charges</label>
+                <input 
+                  type="number" 
+                  class="form-input" 
+                  [(ngModel)]="comptableFormData.costs.other"
+                  name="costsOther"
+                  (ngModelChange)="calculateProfitability()"
+                  placeholder="Assurance, divers">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">🧾 Facturation finale</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Numéro de facture</label>
+                <input 
+                  type="text" 
+                  class="form-input" 
+                  [(ngModel)]="comptableFormData.invoice.number"
+                  name="invoiceNumber"
+                  readonly 
+                  style="background: #f8fafc;">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Date de facturation</label>
+                <input 
+                  type="date" 
+                  class="form-input" 
+                  [(ngModel)]="comptableFormData.invoice.date"
+                  name="invoiceDate">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Date d'échéance</label>
+                <input 
+                  type="date" 
+                  class="form-input" 
+                  [(ngModel)]="comptableFormData.invoice.dueDate"
+                  name="invoiceDueDate">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mode de règlement</label>
+                <select 
+                  class="form-select"
+                  [(ngModel)]="comptableFormData.invoice.paymentMethod"
+                  name="invoicePaymentMethod">
+                  <option value="VIREMENT">🏦 Virement bancaire</option>
+                  <option value="CHEQUE">📄 Chèque</option>
+                  <option value="ESPECES">💵 Espèces</option>
+                  <option value="CB">💳 Carte bancaire</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">📈 Analyse rentabilité</h3>
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <div style="font-size: 14px; color: #64748b;">Chiffre d'affaires HT</div>
+                  <div style="font-size: 18px; font-weight: 700; color: #1e293b;">
+                    {{ comptableFormData.profitability.revenue | number:'1.2-2' }} €
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size: 14px; color: #64748b;">Coûts totaux</div>
+                  <div style="font-size: 18px; font-weight: 700; color: #dc2626;">
+                    {{ calculateTotalCosts() | number:'1.2-2' }} €
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size: 14px; color: #64748b;">Marge brute</div>
+                  <div style="font-size: 18px; font-weight: 700; color: #059669;">
+                    {{ comptableFormData.profitability.grossMargin | number:'1.2-2' }} €
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size: 14px; color: #64748b;">Taux de marge</div>
+                  <div style="font-size: 18px; font-weight: 700; color: #059669;">
+                    {{ comptableFormData.profitability.marginRate | number:'1.1-1' }} %
+                  </div>
+                </div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="comptableFormData.profitability.marginRate"></div>
+              </div>
+              <div style="text-align: center; font-size: 14px; color: #64748b;">
+                Rentabilité: {{ comptableFormData.profitability.marginRate >= 35 ? 'Excellente' : 
+                               comptableFormData.profitability.marginRate >= 25 ? 'Bonne' : 
+                               comptableFormData.profitability.marginRate >= 15 ? 'Correcte' : 'Faible' }} 
+                (objectif: 35%)
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">📋 Notes comptables</h3>
+            <div class="form-group">
+              <label class="form-label">Remarques comptables</label>
+              <textarea 
+                class="form-textarea" 
+                [(ngModel)]="comptableFormData.notes"
+                name="comptableNotes"
+                placeholder="Notes sur la clôture comptable de cette mission..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeForm()">Annuler</button>
+            <button type="submit" class="btn btn-success" [disabled]="loading">
+              {{ loading ? '⏳ Clôture...' : '🔒 Clôturer la Mission' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-content">
+      <div class="big-spinner"></div>
+      <p>Traitement en cours...</p>
+      <small>Validation de la mission</small>
+    </div>
+  </div>
+</div>
