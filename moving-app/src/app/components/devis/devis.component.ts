@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
+import { AppStateService } from '../../services/app.state';
+import { Observable, map } from 'rxjs';
+import { Client, Quote } from '../../models/domain.models';
 
 @Component({
 	selector: 'app-devis',
@@ -12,21 +15,85 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
 	styleUrl: './devis.component.scss'
 })
 export class DevisComponent {
+	// Distance calc demo
 	distanceSpinner = false;
 	syncDistanceResponse: any[] | null = null;
+
+	// Sync demo
 	syncSpinner = false;
 	syncGmailResponse: string | null = null;
+
+	// Extraction demo
 	extractionSpinner = false;
 	promptContent = '';
 	inputExtractResponse: string | null = null;
-	quotesToGenerate: any[] = [];
-	quotesToSend: any[] = [];
-	spinner = false;
-	generateSpinner = false;
+
+	// Quote creation form
+	newClientId: string | null = null;
+	newType: 'PREDEVIS' | 'DEVIS' = 'PREDEVIS';
+	newFormula: 'Eco' | 'Confort' | 'Premium' = 'Confort';
+	newVolume = 20;
+	newDistance = 10;
+	newItems = [
+		{ description: 'Prestation déménagement', unitPrice: 50, quantity: 1 }
+	];
+
+	clients$!: Observable<Client[]>;
+	quotes$!: Observable<Quote[]>;
+	quotesToGenerate$!: Observable<Quote[]>;
+	quotesToSend$!: Observable<Quote[]>;
+
 	sendSpinner = false;
 	reviewSpinner = false;
+	generateSpinner = false;
 	counter = 0;
 
+	constructor(private state: AppStateService) {
+		this.clients$ = this.state.clients;
+		this.quotes$ = this.state.quotes;
+		this.quotesToGenerate$ = this.quotes$.pipe(map(qs => qs.filter(q => q.status === 'DRAFT')));
+		this.quotesToSend$ = this.quotes$.pipe(map(qs => qs.filter(q => q.status === 'SENT')));
+	}
+
+	createQuote(): void {
+		if (!this.newClientId) return;
+		const id = this.state.createQuote({ clientId: this.newClientId, type: this.newType, formula: this.newFormula, volumeM3: this.newVolume, distanceKm: this.newDistance, items: this.newItems, vatRate: undefined });
+		// Attach sample PDF path for preview in this demo
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		this.state['quotes$'].next(this.state['quotes$'].value.map(q => q.id === id ? { ...q, pdfPath: '/assets/sample.pdf' } as Quote : q));
+	}
+
+	sendQuote(_: Event, quote: Quote, _type: 'Devis' | 'Facture') {
+		this.sendSpinner = true;
+		setTimeout(() => {
+			this.state.sendQuote(quote.id);
+			this.sendSpinner = false;
+			alert(`Devis ${quote.number} envoyé`);
+		}, 500);
+	}
+
+	sendQuoteToReview(_: Event, quote: Quote, _type: 'Devis') {
+		this.reviewSpinner = true;
+		setTimeout(() => {
+			this.reviewSpinner = false;
+			alert(`Devis ${quote.number} envoyé en correction`);
+		}, 500);
+	}
+
+	acceptQuote(quote: Quote) {
+		this.state.acceptQuote(quote.id);
+	}
+
+	generateInvoice(quote: Quote) {
+		this.state.createInvoiceFromQuote(quote.id);
+		alert('Facture générée depuis ' + quote.number);
+	}
+
+	returnQuotePath(quote: Quote, _type: 'Devis'): string {
+		return quote.pdfPath ?? '/assets/sample.pdf';
+	}
+
+	// Distance calc mock
 	syncDistanceQuotes(): void {
 		this.distanceSpinner = true;
 		setTimeout(() => {
@@ -54,44 +121,6 @@ export class DevisComponent {
 			this.inputExtractResponse = '{ id: 123, status: "ok" }';
 			this.extractionSpinner = false;
 			this.counter--;
-			this.quotesToGenerate = [
-				{ 'nom - prenom': 'DUPONT Marie', formule: 'Confort' },
-				{ 'nom - prenom': 'BERNARD Paul', formule: 'Eco' },
-			];
 		}, 1000);
-	}
-
-	generateQuotes(kind: 'Devis' | 'Facture'): void {
-		this.generateSpinner = true;
-		this.counter++;
-		setTimeout(() => {
-			this.generateSpinner = false;
-			this.counter--;
-			this.quotesToSend = [
-				{ 'nom - prenom': 'DUPONT Marie', 'type_mail': 'Gmail', 'devis n°': 'D-2025-0001' },
-			];
-		}, 1000);
-	}
-
-	returnQuotePath(quote: any, type: 'Devis' | 'Facture'): string {
-		return '/assets/sample.pdf';
-	}
-
-	sendQuote(event: Event, quote: any, type: 'Devis' | 'Facture'): void {
-		event.preventDefault();
-		this.sendSpinner = true;
-		setTimeout(() => {
-			this.sendSpinner = false;
-			alert(`${type} envoyé à ${quote['nom - prenom']}`);
-		}, 800);
-	}
-
-	sendQuoteToReview(event: Event, quote: any, type: 'Devis' | 'Facture'): void {
-		event.preventDefault();
-		this.reviewSpinner = true;
-		setTimeout(() => {
-			this.reviewSpinner = false;
-			alert(`${type} envoyé en correction pour ${quote['nom - prenom']}`);
-		}, 800);
 	}
 }

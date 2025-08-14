@@ -1,0 +1,44 @@
+<div class="clients-container">
+	<div class="toolbar">
+		<input class="search" [(ngModel)]="term" placeholder="🔎 Rechercher un client (nom, email)" />
+	</div>
+
+	<div class="add-card">
+		<h3>➕ Ajouter un client</h3>
+		<div class="grid">
+			<input [(ngModel)]="name" placeholder="Nom complet" />
+			<input [(ngModel)]="email" placeholder="Email" />
+			<input [(ngModel)]="phone" placeholder="Téléphone" />
+			<input [(ngModel)]="street" placeholder="Adresse (rue)" />
+			<input [(ngModel)]="postalCode" placeholder="Code postal" />
+			<input [(ngModel)]="city" placeholder="Ville" />
+		</div>
+		<button class="btn" (click)="addClient()">Enregistrer</button>
+	</div>
+
+	<div class="clients-list" *ngIf="filtered$ | async as rows">
+		<div class="client-card" *ngFor="let row of rows">
+			<div class="client-header">
+				<h4>{{row.client.name}}</h4>
+				<div class="meta">
+					<span *ngIf="row.client.email">📧 {{row.client.email}}</span>
+					<span *ngIf="row.client.phone">📞 {{row.client.phone}}</span>
+				</div>
+			</div>
+			<div class="history">
+				<div class="history-col">
+					<div class="title">📝 Devis</div>
+					<div class="line" *ngFor="let q of row.quotes">{{q.number}} • {{q.status}} • {{q.totalTtc | number:'1.0-2'}}€</div>
+				</div>
+				<div class="history-col">
+					<div class="title">🧾 Factures</div>
+					<div class="line" *ngFor="let i of row.invoices">{{i.number}} • {{i.status}} • {{i.amountTtc | number:'1.0-2'}}€</div>
+				</div>
+				<div class="history-col">
+					<div class="title">🚚 Missions</div>
+					<div class="line" *ngFor="let m of row.missions">{{m.plannedDate | date:'mediumDate'}} • {{m.status}}</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
